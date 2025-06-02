@@ -1,0 +1,135 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Tic Tac Toe - Python & Brython</title>
+   <script src="https://cdn.jsdelivr.net/npm/brython@3.10.5/brython.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: #530303;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      height: 100vh;
+      justify-content: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      grid-gap: 5px;
+    }
+    .cell {
+      width: 80px;
+      height: 80px;
+      background: #444;
+      font-size: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 8px;
+    }
+    .cell:hover {
+      background: #666;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      height: 24px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+    }
+    button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body onload="brython()">
+
+  <h1>Simple Tic Tac Toe</h1>
+  <div id="board"></div>
+  <div id="message"></div>
+  <button id="restart">Restart Game</button>
+
+  <script type="text/python">
+from browser import document
+
+board = document['board']
+message = document['message']
+restart = document['restart']
+
+# The current player: 'X' or 'O'
+current_player = 'X'
+
+# Board state: a list with 9 elements, starting empty
+cells = [''] * 9
+
+# Winning combinations index sets
+wins = [
+  [0,1,2], [3,4,5], [6,7,8],   # rows
+  [0,3,6], [1,4,7], [2,5,8],   # columns
+  [0,4,8], [2,4,6]             # diagonals
+]
+
+def create_board():
+    board.clear()
+    for i in range(9):
+        cell = document.createElement('div')
+        cell.classList.add('cell')
+        cell.attrs['index'] = str(i)
+        cell.textContent = cells[i]
+        board <= cell
+        cell.bind('click', on_click)
+
+def on_click(event):
+    global current_player
+    idx = int(event.target.attrs['index'])
+    
+    # If cell already has a value or game ended (message says win/draw), ignore click
+    if cells[idx] != '' or "wins" in message.text or "draw" in message.text:
+        return
+    
+    # Set the cell for current player
+    cells[idx] = current_player
+    event.target.textContent = current_player        # Switch player
+        current_player = 'O' if current_player == 'X' else 'X'
+        message.text = f"Player {current_player}'s turn"
+
+def check_win(player):
+    # Check all winning combinations
+    for combo in wins:
+        if all(cells[i] == player for i in combo):
+            return True
+    return False
+
+def restart_game(event):
+    global current_player, cells
+    current_player = 'X'
+    cells = [''] * 9
+    message.text = f"Player {current_player}'s turn"
+    create_board()
+
+# Initial Setup
+message.text = f"Player {current_player}'s turn"
+create_board()
+restart.bind('click', restart_game)
+
+  </script>
+
+</body>
+</html>
